@@ -1,0 +1,358 @@
+package main;
+
+// Importar otras clases necesarias
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.ArrayList;
+import java.util.Scanner;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+public class Principal {
+	private static Scanner sca = new Scanner(System.in);
+	private static Libro libro = null;
+	private static Autor autor = null;
+	private static Prestamo prestamo = null;
+	public static File archivoLibros, archivoAutores, archivoPrestamos;
+
+	public static void main(String[] args) {
+		crearArchivos();
+		boolean salir = false;
+		while (!salir) {
+			mostrarMenu();
+			int opcion = sca.nextInt();
+			switch (opcion) {
+				case 1:
+					// Gestionar libros
+					gestionarLibros(archivoLibros);
+					break;
+				case 2:// Gestionar autores
+					gestionarAutores(archivoAutores);
+					break;
+				case 3:
+					// Gestionar préstamos
+					gestionarPrestamos(archivoPrestamos);
+					break;
+				case 4:
+					salir = true;
+					break;
+				default:
+					System.out.println("Opción no válida. Por favor,intente de nuevo.");
+			}
+		}
+	}
+
+	public static void crearArchivos() {
+		String ficheroLibros = "libros.bin";
+		String ficheroAutores = "autores.bin";
+		String ficheroPrestamos = "prestamos.txt";
+
+		archivoLibros = new File(ficheroLibros);
+		archivoAutores = new File(ficheroAutores);
+		archivoPrestamos = new File(ficheroPrestamos);
+
+		if (!archivoLibros.exists() && !archivoAutores.exists() && !archivoPrestamos.exists()) {
+			try {
+				archivoLibros.createNewFile();
+				archivoAutores.createNewFile();
+				archivoPrestamos.createNewFile();
+			} catch (IOException e) {
+				System.out.println("Los ficheros no se han creado");
+			}
+			System.out.println("Los ficheros se han creado correctamente");
+		}
+	}
+
+	public static void mostrarMenu() {
+		System.out.println("Bienvenido al Sistema de Gestión de Biblioteca");
+		System.out.println("1. Gestionar Libros");
+		System.out.println("2. Gestionar Autores");
+		System.out.println("3. Gestionar Préstamos");
+		System.out.println("4. Salir");
+		System.out.print("Seleccione una opción: ");
+	}
+
+	private static void gestionarLibros(File archivoLibros) {
+		libro = new Libro("", "", 0, 0);
+
+		System.out.println("Elige una de las opciones");
+		System.out.println("1. Añadir un Libro");
+		System.out.println("2. Mostrar lista de Libros registrados");
+		System.out.println("3. Modificar un Libro");
+		System.out.println("4. Eliminar un Libro");
+		System.out.println("5. Exportar libros");
+		System.out.println("6. Salir al menú principal");
+		int opcion = sca.nextInt();
+
+		switch (opcion) {
+			case 1:
+				System.out.println("Introduzca el ID del libro:");
+				int idLibro = sca.nextInt();
+				sca.nextLine(); // Consumir nueva línea
+				System.out.println("Introduzca el título del libro:");
+				String titulo = sca.nextLine();
+				System.out.println("Introduzca el género del libro:");
+				String genero = sca.nextLine();
+				System.out.println("Introduzca el año de publicación del libro:");
+				int anioPublicacion = sca.nextInt();
+
+				ArrayList<Libro> libros = new ArrayList<>();
+				libros.add(new Libro(titulo, genero, anioPublicacion, idLibro));
+				libro.agregarLibro(archivoLibros, libros);
+				break;
+			case 2:
+				libro.mostrarLibros(archivoLibros);
+				break;
+			case 3:
+				System.out.println("Introduzca el id del libro a modificar: ");
+				int idLibroModificar = sca.nextInt();
+				sca.nextLine(); // Consumir nueva línea
+				System.out.println("Introduzca el nuevo título del libro: ");
+				String nuevoTitulo = sca.nextLine();
+				System.out.println("Introduzca el nuevo género: ");
+				String nuevoGenero = sca.nextLine();
+				System.out.println("Introduzca el nuevo año de publicación: ");
+				int nuevoAnioPublicacion = sca.nextInt();
+				libro.modificarLibro(archivoLibros, idLibroModificar, nuevoTitulo, nuevoGenero, nuevoAnioPublicacion);
+				break;
+			case 4:
+				System.out.println("Introduzca el id del libro a eliminar: ");
+				idLibro = sca.nextInt();
+				libro.borrarLibro(archivoLibros, idLibro);
+				break;
+			case 5:
+				try {
+				// Cargar la lista de libros desde el archivo binario
+
+				if (archivoLibros.exists()) {
+				try (ObjectInputStream ois = new ObjectInputStream(new
+				FileInputStream(archivoLibros))) {
+				libros = (ArrayList<Libro>) ois.readObject();
+				}
+				}
+
+				// Crear un documento XML
+				DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+				Document doc = docBuilder.newDocument();
+
+				// Crear el elemento raíz
+				Element rootElement = doc.createElement("libros");
+				doc.appendChild(rootElement);
+
+				// Crear elementos para cada libro
+				for (Libro libro : libros) {
+				Element libroElement = doc.createElement("libro");
+				rootElement.appendChild(libroElement);
+
+				Element idElement = doc.createElement("id");
+				idElement.appendChild(doc.createTextNode(String.valueOf(libro.getId_libro())));
+				libroElement.appendChild(idElement);
+
+				Element tituloElement = doc.createElement("titulo");
+				tituloElement.appendChild(doc.createTextNode(libro.getTitulo()));
+				libroElement.appendChild(tituloElement);
+
+				Element generoElement = doc.createElement("genero");
+				generoElement.appendChild(doc.createTextNode(libro.getGenero()));
+				libroElement.appendChild(generoElement);
+
+				Element anioPublicacionElement = doc.createElement("anioPublicacion");
+				anioPublicacionElement
+				.appendChild(doc.createTextNode(String.valueOf(libro.getAnio_publicacion())));
+				libroElement.appendChild(anioPublicacionElement);
+				}
+
+				// Escribir el contenido del documento XML en un archivo
+				TransformerFactory transformerFactory = TransformerFactory.newInstance();
+				Transformer transformer = transformerFactory.newTransformer();
+				DOMSource source = new DOMSource(doc);
+				StreamResult result = new StreamResult(new File("libros.xml"));
+				transformer.transform(source, result);
+
+				System.out.println("Libros exportados a XML correctamente.");
+
+				} catch (IOException | ClassNotFoundException | ParserConfigurationException
+				| TransformerException e) {
+				e.printStackTrace();
+				}
+				break;
+			case 6:
+				mostrarMenu();
+				break;
+			default:
+				System.err.println("Elige una opción del menú");
+		}
+	}
+
+	private static void gestionarAutores(File archivoAutores) {
+		autor = new Autor("", "", 0, 0);
+
+		System.out.println("Elige una de las opciones");
+		System.out.println("1. Añadir un/a autor/a");
+		System.out.println("2. Mostrar lista de Autores registrados");
+		System.out.println("3. Modificar un/a autor/a");
+		System.out.println("4. Eliminar un/a autor/a");
+		System.out.println("5. Exportar autores");
+		System.out.println("6. Salir al menú principal");
+		int opcion = sca.nextInt();
+
+		switch (opcion) {
+			case 1:
+				System.out.println("Introduzca el ID del autor:");
+				int idAutor = sca.nextInt();
+				sca.nextLine(); // Consumir nueva línea
+				System.out.println("Introduzca el nombre del autor:");
+				String nombre_autor = sca.nextLine();
+				System.out.println("Introduzca nacionalidad del autor:");
+				String nacionalidad = sca.nextLine();
+				System.out.println("Introduzca el año de nacimiento del autor:");
+				int anioNacimiento = sca.nextInt();
+
+				ArrayList<Autor> autores = new ArrayList<>();
+				autores.add(new Autor(nombre_autor, nacionalidad, anioNacimiento, idAutor));
+				autor.agregarAutor(archivoAutores, autores);
+				break;
+			case 2:
+				autor.mostrarAutores(archivoAutores);
+				break;
+			case 3:
+				System.out.println("Introduzca el id del autor a modificar: ");
+				int idAutorModificar = sca.nextInt();
+				sca.nextLine(); // Consumir nueva línea
+				System.out.println("Introduzca el nuevo nombre del autor: ");
+				String nuevoNombre = sca.nextLine();
+				System.out.println("Introduzca la nueva nacionalidad: ");
+				String nuevaNacinalidad = sca.nextLine();
+				System.out.println("Introduzca el nuevo año de nacimiento: ");
+				int nuevoAnioNacimiento = sca.nextInt();
+				autor.modificarAutor(archivoAutores, idAutorModificar, nuevoNombre, nuevaNacinalidad, nuevoAnioNacimiento);
+				break;
+			case 4:
+				System.out.println("Introduzca el id del autor a eliminar: ");
+				idAutor = sca.nextInt();
+				autor.borrarAutor(archivoAutores, idAutor);
+				break;
+			case 5:
+				// try {
+				// // Cargar la lista de libros desde el archivo binario
+
+				// if (archivoLibros.exists()) {
+				// try (ObjectInputStream ois = new ObjectInputStream(new
+				// FileInputStream(archivoLibros))) {
+				// libros = (ArrayList<Libro>) ois.readObject();
+				// }
+				// }
+
+				// // Crear un documento XML
+				// DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+				// DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+				// Document doc = docBuilder.newDocument();
+
+				// // Crear el elemento raíz
+				// Element rootElement = doc.createElement("libros");
+				// doc.appendChild(rootElement);
+
+				// // Crear elementos para cada libro
+				// for (Libro libro : libros) {
+				// Element libroElement = doc.createElement("libro");
+				// rootElement.appendChild(libroElement);
+
+				// Element idElement = doc.createElement("id");
+				// idElement.appendChild(doc.createTextNode(String.valueOf(libro.getId_libro())));
+				// libroElement.appendChild(idElement);
+
+				// Element tituloElement = doc.createElement("titulo");
+				// tituloElement.appendChild(doc.createTextNode(libro.getTitulo()));
+				// libroElement.appendChild(tituloElement);
+
+				// Element generoElement = doc.createElement("genero");
+				// generoElement.appendChild(doc.createTextNode(libro.getGenero()));
+				// libroElement.appendChild(generoElement);
+
+				// Element anioPublicacionElement = doc.createElement("anioPublicacion");
+				// anioPublicacionElement
+				// .appendChild(doc.createTextNode(String.valueOf(libro.getAnio_publicacion())));
+				// libroElement.appendChild(anioPublicacionElement);
+				// }
+
+				// // Escribir el contenido del documento XML en un archivo
+				// TransformerFactory transformerFactory = TransformerFactory.newInstance();
+				// Transformer transformer = transformerFactory.newTransformer();
+				// DOMSource source = new DOMSource(doc);
+				// StreamResult result = new StreamResult(new File("libros.xml"));
+				// transformer.transform(source, result);
+
+				// System.out.println("Libros exportados a XML correctamente.");
+
+				// } catch (IOException | ClassNotFoundException | ParserConfigurationException
+				// | TransformerException e) {
+				// e.printStackTrace();
+				// }
+				break;
+			case 6:
+				mostrarMenu();
+				break;
+			default:
+				System.err.println("Elige una opción del menú");
+		}
+	}
+
+	private static void gestionarPrestamos(File archivoPrestamos) {
+		Prestamo prestamo = new Prestamo(0, 0, 0, 0, 0, false); // Ajusta los valores según tu lógica
+
+		System.out.println("Elige una de las opciones");
+		System.out.println("1. Hacer un préstamo");
+		System.out.println("2. Mostrar lista de préstamos");
+		System.out.println("3. Hacer devolución");
+		System.out.println("4. Salir al menú principal");
+		int opcion = sca.nextInt();
+
+		switch (opcion) {
+			case 1:
+				System.out.println("Introduzca el id del pŕestamo: ");
+				int id_prestamo = sca.nextInt();
+				System.out.println("Introduzca el id del cliente: ");
+				int id_cliente = sca.nextInt();
+				System.out.println("Introduzca el id del libro: ");
+				int id_libro = sca.nextInt();
+				System.out.println("Introduzca la fecha de préstamo: ");
+				int fecha_prestamo = sca.nextInt();
+				System.out.println("Introduzca la fecha de devolución prevista: ");
+				int fecha_devolucion = sca.nextInt();
+				boolean esDevuelto = false;
+
+				prestamo = new Prestamo(id_prestamo, id_cliente, id_libro, fecha_prestamo, fecha_devolucion,
+						esDevuelto);
+				prestamo.hacerPrestamo(archivoPrestamos);
+
+				break;
+			case 2:
+				prestamo.mostrarPrestamos(archivoPrestamos);
+				break;
+			case 3:
+				System.out.println("Introduzca el id del prestamo: ");
+				id_prestamo = sca.nextInt();
+				esDevuelto = true;
+				prestamo.hacerDevolucion(id_prestamo, archivoPrestamos);
+				break;
+			case 4:
+				mostrarMenu();
+				break;
+			default:
+				System.err.println("Elige una opción del menú");
+		}
+	}
+
+}
