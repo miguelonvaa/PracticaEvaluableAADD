@@ -133,59 +133,58 @@ public class Principal {
 				break;
 			case 5:
 				try {
-				// Cargar la lista de libros desde el archivo binario
+					// Cargar la lista de libros desde el archivo binario
+					ArrayList<Libro> libros_aXML = new ArrayList<>();
 
-				if (archivoLibros.exists()) {
-				try (ObjectInputStream ois = new ObjectInputStream(new
-				FileInputStream(archivoLibros))) {
-				libros = (ArrayList<Libro>) ois.readObject();
-				}
-				}
+					if (archivoLibros.exists()) {
+						try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivoLibros))) {
+							libros_aXML = (ArrayList<Libro>) ois.readObject();
+						}
+					}
 
-				// Crear un documento XML
-				DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-				DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-				Document doc = docBuilder.newDocument();
+					// Crear un documento XML
+					DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+					DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+					Document doc = docBuilder.newDocument();
 
-				// Crear el elemento raíz
-				Element rootElement = doc.createElement("libros");
-				doc.appendChild(rootElement);
+					// Crear el elemento raíz
+					Element rootElement = doc.createElement("libros");
+					doc.appendChild(rootElement);
 
-				// Crear elementos para cada libro
-				for (Libro libro : libros) {
-				Element libroElement = doc.createElement("libro");
-				rootElement.appendChild(libroElement);
+					// Crear elementos para cada libro
+					for (Libro libro : libros_aXML) {
+						Element libroElement = doc.createElement("libro");
+						rootElement.appendChild(libroElement);
 
-				Element idElement = doc.createElement("id");
-				idElement.appendChild(doc.createTextNode(String.valueOf(libro.getId_libro())));
-				libroElement.appendChild(idElement);
+						Element idElement = doc.createElement("id");
+						idElement.appendChild(doc.createTextNode(String.valueOf(libro.getId_libro())));
+						libroElement.appendChild(idElement);
 
-				Element tituloElement = doc.createElement("titulo");
-				tituloElement.appendChild(doc.createTextNode(libro.getTitulo()));
-				libroElement.appendChild(tituloElement);
+						Element tituloElement = doc.createElement("titulo");
+						tituloElement.appendChild(doc.createTextNode(libro.getTitulo()));
+						libroElement.appendChild(tituloElement);
 
-				Element generoElement = doc.createElement("genero");
-				generoElement.appendChild(doc.createTextNode(libro.getGenero()));
-				libroElement.appendChild(generoElement);
+						Element generoElement = doc.createElement("genero");
+						generoElement.appendChild(doc.createTextNode(libro.getGenero()));
+						libroElement.appendChild(generoElement);
 
-				Element anioPublicacionElement = doc.createElement("anioPublicacion");
-				anioPublicacionElement
-				.appendChild(doc.createTextNode(String.valueOf(libro.getAnio_publicacion())));
-				libroElement.appendChild(anioPublicacionElement);
-				}
+						Element anioPublicacionElement = doc.createElement("anioPublicacion");
+						anioPublicacionElement
+								.appendChild(doc.createTextNode(String.valueOf(libro.getAnio_publicacion())));
+						libroElement.appendChild(anioPublicacionElement);
+					}
 
-				// Escribir el contenido del documento XML en un archivo
-				TransformerFactory transformerFactory = TransformerFactory.newInstance();
-				Transformer transformer = transformerFactory.newTransformer();
-				DOMSource source = new DOMSource(doc);
-				StreamResult result = new StreamResult(new File("libros.xml"));
-				transformer.transform(source, result);
+					// Escribir el contenido del documento XML en un archivo
+					TransformerFactory transformerFactory = TransformerFactory.newInstance();
+					Transformer transformer = transformerFactory.newTransformer();
+					DOMSource source = new DOMSource(doc);
+					StreamResult result = new StreamResult(new File("libros.xml"));
+					transformer.transform(source, result);
 
-				System.out.println("Libros exportados a XML correctamente.");
+					System.out.println("Libros exportados a XML correctamente.");
 
-				} catch (IOException | ClassNotFoundException | ParserConfigurationException
-				| TransformerException e) {
-				e.printStackTrace();
+				} catch (IOException | ClassNotFoundException | ParserConfigurationException | TransformerException e) {
+					e.printStackTrace();
 				}
 				break;
 			case 6:
@@ -237,7 +236,8 @@ public class Principal {
 				String nuevaNacinalidad = sca.nextLine();
 				System.out.println("Introduzca el nuevo año de nacimiento: ");
 				int nuevoAnioNacimiento = sca.nextInt();
-				autor.modificarAutor(archivoAutores, idAutorModificar, nuevoNombre, nuevaNacinalidad, nuevoAnioNacimiento);
+				autor.modificarAutor(archivoAutores, idAutorModificar, nuevoNombre, nuevaNacinalidad,
+						nuevoAnioNacimiento);
 				break;
 			case 4:
 				System.out.println("Introduzca el id del autor a eliminar: ");
