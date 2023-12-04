@@ -195,6 +195,9 @@ public class Principal {
 		}
 	}
 
+	/**
+	 * @param archivoAutores
+	 */
 	private static void gestionarAutores(File archivoAutores) {
 		autor = new Autor("", "", 0, 0);
 
@@ -244,63 +247,62 @@ public class Principal {
 				idAutor = sca.nextInt();
 				autor.borrarAutor(archivoAutores, idAutor);
 				break;
-			case 5:
-				// try {
-				// // Cargar la lista de libros desde el archivo binario
-
-				// if (archivoLibros.exists()) {
-				// try (ObjectInputStream ois = new ObjectInputStream(new
-				// FileInputStream(archivoLibros))) {
-				// libros = (ArrayList<Libro>) ois.readObject();
-				// }
-				// }
-
-				// // Crear un documento XML
-				// DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-				// DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-				// Document doc = docBuilder.newDocument();
-
-				// // Crear el elemento raíz
-				// Element rootElement = doc.createElement("libros");
-				// doc.appendChild(rootElement);
-
-				// // Crear elementos para cada libro
-				// for (Libro libro : libros) {
-				// Element libroElement = doc.createElement("libro");
-				// rootElement.appendChild(libroElement);
-
-				// Element idElement = doc.createElement("id");
-				// idElement.appendChild(doc.createTextNode(String.valueOf(libro.getId_libro())));
-				// libroElement.appendChild(idElement);
-
-				// Element tituloElement = doc.createElement("titulo");
-				// tituloElement.appendChild(doc.createTextNode(libro.getTitulo()));
-				// libroElement.appendChild(tituloElement);
-
-				// Element generoElement = doc.createElement("genero");
-				// generoElement.appendChild(doc.createTextNode(libro.getGenero()));
-				// libroElement.appendChild(generoElement);
-
-				// Element anioPublicacionElement = doc.createElement("anioPublicacion");
-				// anioPublicacionElement
-				// .appendChild(doc.createTextNode(String.valueOf(libro.getAnio_publicacion())));
-				// libroElement.appendChild(anioPublicacionElement);
-				// }
-
-				// // Escribir el contenido del documento XML en un archivo
-				// TransformerFactory transformerFactory = TransformerFactory.newInstance();
-				// Transformer transformer = transformerFactory.newTransformer();
-				// DOMSource source = new DOMSource(doc);
-				// StreamResult result = new StreamResult(new File("libros.xml"));
-				// transformer.transform(source, result);
-
-				// System.out.println("Libros exportados a XML correctamente.");
-
-				// } catch (IOException | ClassNotFoundException | ParserConfigurationException
-				// | TransformerException e) {
-				// e.printStackTrace();
-				// }
-				break;
+				case 5:
+				try {
+					// Cargar la lista de autores desde el archivo binario
+					ArrayList<Autor> autores_aXML = new ArrayList<>();
+			
+					if (archivoAutores.exists()) {
+						try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivoAutores))) {
+							autores_aXML = (ArrayList<Autor>) ois.readObject();
+						}
+					}
+			
+					// Crear un documento XML
+					DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+					DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+					Document doc = docBuilder.newDocument();
+			
+					// Crear el elemento raíz
+					Element rootElement = doc.createElement("autores");
+					doc.appendChild(rootElement);
+			
+					// Crear elementos para cada autor
+					for (Autor autor : autores_aXML) {
+						Element autorElement = doc.createElement("autor");
+						rootElement.appendChild(autorElement);
+			
+						Element idElement = doc.createElement("id");
+						idElement.appendChild(doc.createTextNode(String.valueOf(autor.getId_autor())));
+						autorElement.appendChild(idElement);
+			
+						Element nombreElement = doc.createElement("nombre");
+						nombreElement.appendChild(doc.createTextNode(autor.getNombre_autor()));
+						autorElement.appendChild(nombreElement);
+			
+						Element nacionalidadElement = doc.createElement("nacionalidad");
+						nacionalidadElement.appendChild(doc.createTextNode(autor.getNacionalidad()));
+						autorElement.appendChild(nacionalidadElement);
+			
+						Element anioNacimientoElement = doc.createElement("anioNacimiento");
+						anioNacimientoElement
+								.appendChild(doc.createTextNode(String.valueOf(autor.getAnio_nacimiento())));
+						autorElement.appendChild(anioNacimientoElement);
+					}
+			
+					// Escribir el contenido del documento XML en un archivo
+					TransformerFactory transformerFactory = TransformerFactory.newInstance();
+					Transformer transformer = transformerFactory.newTransformer();
+					DOMSource source = new DOMSource(doc);
+					StreamResult result = new StreamResult(new File("autores.xml"));
+					transformer.transform(source, result);
+			
+					System.out.println("Autores exportados a XML correctamente.");
+			
+				} catch (IOException | ClassNotFoundException | ParserConfigurationException | TransformerException e) {
+					e.printStackTrace();
+				}
+				break;			
 			case 6:
 				mostrarMenu();
 				break;
