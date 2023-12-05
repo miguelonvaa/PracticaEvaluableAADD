@@ -12,7 +12,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -25,6 +24,7 @@ public class Principal {
 	private static Autor autor = null;
 	private static Prestamo prestamo = null;
 	public static File archivoLibros, archivoAutores, archivoPrestamos;
+	private static final ArrayList<Libro> libros = new ArrayList<>();
 
 	public static void main(String[] args) {
 		crearArchivos();
@@ -84,8 +84,6 @@ public class Principal {
 	}
 
 	private static void gestionarLibros(File archivoLibros) {
-		libro = new Libro("", "", 0, 0);
-
 		System.out.println("Elige una de las opciones");
 		System.out.println("1. Añadir un Libro");
 		System.out.println("2. Mostrar lista de Libros registrados");
@@ -106,9 +104,8 @@ public class Principal {
 				String genero = sca.nextLine();
 				System.out.println("Introduzca el año de publicación del libro:");
 				int anioPublicacion = sca.nextInt();
-
-				ArrayList<Libro> libros = new ArrayList<>();
-				libros.add(new Libro(titulo, genero, anioPublicacion, idLibro));
+				libro = new Libro(titulo, genero, anioPublicacion, idLibro);
+				libros.add(libro);
 				libro.agregarLibro(archivoLibros, libros);
 				break;
 			case 2:
@@ -195,12 +192,7 @@ public class Principal {
 		}
 	}
 
-	/**
-	 * @param archivoAutores
-	 */
 	private static void gestionarAutores(File archivoAutores) {
-		autor = new Autor("", "", 0, 0);
-
 		System.out.println("Elige una de las opciones");
 		System.out.println("1. Añadir un/a autor/a");
 		System.out.println("2. Mostrar lista de Autores registrados");
@@ -221,9 +213,9 @@ public class Principal {
 				String nacionalidad = sca.nextLine();
 				System.out.println("Introduzca el año de nacimiento del autor:");
 				int anioNacimiento = sca.nextInt();
-
+				autor = new Autor(nombre_autor, nacionalidad, anioNacimiento, idAutor);
 				ArrayList<Autor> autores = new ArrayList<>();
-				autores.add(new Autor(nombre_autor, nacionalidad, anioNacimiento, idAutor));
+				autores.add(autor);
 				autor.agregarAutor(archivoAutores, autores);
 				break;
 			case 2:
@@ -312,8 +304,6 @@ public class Principal {
 	}
 
 	private static void gestionarPrestamos(File archivoPrestamos) {
-		Prestamo prestamo = new Prestamo(0, 0, 0, 0, 0, false); // Ajusta los valores según tu lógica
-
 		System.out.println("Elige una de las opciones");
 		System.out.println("1. Hacer un préstamo");
 		System.out.println("2. Mostrar lista de préstamos");
@@ -356,5 +346,4 @@ public class Principal {
 				System.err.println("Elige una opción del menú");
 		}
 	}
-
 }

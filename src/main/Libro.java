@@ -2,8 +2,6 @@ package main;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Scanner;
 
 public class Libro implements Serializable {
 	private String titulo, genero;
@@ -67,7 +65,6 @@ public class Libro implements Serializable {
 			} else {
 				// Si el archivo está vacío o no existe, simplemente escribir el libro
 				ObjectOutputStream objetoSalida = new ObjectOutputStream(new FileOutputStream(archivo));
-				libros.add(this);
 				objetoSalida.writeObject(libros);
 				objetoSalida.close();
 			}
