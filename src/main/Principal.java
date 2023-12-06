@@ -3,8 +3,10 @@ package main;
 // Importar otras clases necesarias
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 import javax.xml.parsers.DocumentBuilder;
@@ -12,6 +14,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -90,7 +94,8 @@ public class Principal {
 		System.out.println("3. Modificar un Libro");
 		System.out.println("4. Eliminar un Libro");
 		System.out.println("5. Exportar libros");
-		System.out.println("6. Salir al menú principal");
+		System.out.println("6. Importar libros");
+		System.out.println("7. Salir al menú principal");
 		int opcion = sca.nextInt();
 
 		switch (opcion) {
@@ -185,6 +190,50 @@ public class Principal {
 				}
 				break;
 			case 6:
+				try {
+					// Crear un ArrayList para almacenar los objetos Libro
+					ArrayList<Libro> libros = new ArrayList<>();
+
+					// Parsear el documento XML
+					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+					DocumentBuilder builder = factory.newDocumentBuilder();
+					Document document = builder.parse(new File("libros.xml"));
+
+					// Obtener el nodo raíz "libros"
+					Element rootElement = document.getDocumentElement();
+
+					// Obtener la lista de nodos de libros
+					NodeList nodeList = document.getElementsByTagName("libro");
+
+					// Recorrer la lista de nodos y crear objetos Libro
+					for (int i = 0; i < nodeList.getLength(); i++) {
+						libro = new Libro("", "", 0, 0);
+						Node node = nodeList.item(i);
+						if (node.getNodeType() == Node.ELEMENT_NODE) {
+							Element element = (Element) node;
+							libro.setId_libro(
+									Integer.parseInt(element.getElementsByTagName("id").item(0).getTextContent()));
+							libro.setTitulo(element.getElementsByTagName("titulo").item(0).getTextContent());
+							libro.setGenero(element.getElementsByTagName("genero").item(0).getTextContent());
+							libro.setAnio_publicacion(Integer.parseInt(
+									element.getElementsByTagName("anioPublicacion").item(0).getTextContent()));
+							libros.add(libro);
+						}
+					}
+
+					// Escribir el ArrayList de objetos Libro en un archivo binario
+					try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("libros.bin"))) {
+						oos.writeObject(libros);
+						System.out.println("Objetos Libro escritos en el archivo binario.");
+					}
+				} catch (ParserConfigurationException | IOException e) {
+					e.printStackTrace();
+				} catch (org.xml.sax.SAXException e) {
+					e.printStackTrace();
+				}
+
+				break;
+			case 7:
 				mostrarMenu();
 				break;
 			default:
@@ -199,7 +248,8 @@ public class Principal {
 		System.out.println("3. Modificar un/a autor/a");
 		System.out.println("4. Eliminar un/a autor/a");
 		System.out.println("5. Exportar autores");
-		System.out.println("6. Salir al menú principal");
+		System.out.println("6. Importar autores");
+		System.out.println("7. Salir al menú principal");
 		int opcion = sca.nextInt();
 
 		switch (opcion) {
@@ -239,63 +289,106 @@ public class Principal {
 				idAutor = sca.nextInt();
 				autor.borrarAutor(archivoAutores, idAutor);
 				break;
-				case 5:
+			case 5:
 				try {
 					// Cargar la lista de autores desde el archivo binario
 					ArrayList<Autor> autores_aXML = new ArrayList<>();
-			
+
 					if (archivoAutores.exists()) {
 						try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivoAutores))) {
 							autores_aXML = (ArrayList<Autor>) ois.readObject();
 						}
 					}
-			
+
 					// Crear un documento XML
 					DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 					DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 					Document doc = docBuilder.newDocument();
-			
+
 					// Crear el elemento raíz
 					Element rootElement = doc.createElement("autores");
 					doc.appendChild(rootElement);
-			
+
 					// Crear elementos para cada autor
 					for (Autor autor : autores_aXML) {
 						Element autorElement = doc.createElement("autor");
 						rootElement.appendChild(autorElement);
-			
+
 						Element idElement = doc.createElement("id");
 						idElement.appendChild(doc.createTextNode(String.valueOf(autor.getId_autor())));
 						autorElement.appendChild(idElement);
-			
+
 						Element nombreElement = doc.createElement("nombre");
 						nombreElement.appendChild(doc.createTextNode(autor.getNombre_autor()));
 						autorElement.appendChild(nombreElement);
-			
+
 						Element nacionalidadElement = doc.createElement("nacionalidad");
 						nacionalidadElement.appendChild(doc.createTextNode(autor.getNacionalidad()));
 						autorElement.appendChild(nacionalidadElement);
-			
+
 						Element anioNacimientoElement = doc.createElement("anioNacimiento");
 						anioNacimientoElement
 								.appendChild(doc.createTextNode(String.valueOf(autor.getAnio_nacimiento())));
 						autorElement.appendChild(anioNacimientoElement);
 					}
-			
+
 					// Escribir el contenido del documento XML en un archivo
 					TransformerFactory transformerFactory = TransformerFactory.newInstance();
 					Transformer transformer = transformerFactory.newTransformer();
 					DOMSource source = new DOMSource(doc);
 					StreamResult result = new StreamResult(new File("autores.xml"));
 					transformer.transform(source, result);
-			
+
 					System.out.println("Autores exportados a XML correctamente.");
-			
+
 				} catch (IOException | ClassNotFoundException | ParserConfigurationException | TransformerException e) {
 					e.printStackTrace();
 				}
-				break;			
+				break;
 			case 6:
+				try {
+					// Crear un ArrayList para almacenar los objetos Libro
+					ArrayList<Libro> libros = new ArrayList<>();
+
+					// Parsear el documento XML
+					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+					DocumentBuilder builder = factory.newDocumentBuilder();
+					Document document = builder.parse(new File("libros.xml"));
+
+					// Obtener el nodo raíz "libros"
+					Element rootElement = document.getDocumentElement();
+
+					// Obtener la lista de nodos de libros
+					NodeList nodeList = document.getElementsByTagName("libro");
+
+					// Recorrer la lista de nodos y crear objetos Libro
+					for (int i = 0; i < nodeList.getLength(); i++) {
+						libro = new Libro("", "", 0, 0);
+						Node node = nodeList.item(i);
+						if (node.getNodeType() == Node.ELEMENT_NODE) {
+							Element element = (Element) node;
+							libro.setId_libro(
+									Integer.parseInt(element.getElementsByTagName("id").item(0).getTextContent()));
+							libro.setTitulo(element.getElementsByTagName("titulo").item(0).getTextContent());
+							libro.setGenero(element.getElementsByTagName("genero").item(0).getTextContent());
+							libro.setAnio_publicacion(Integer.parseInt(
+									element.getElementsByTagName("anioPublicacion").item(0).getTextContent()));
+							libros.add(libro);
+						}
+					}
+
+					// Escribir el ArrayList de objetos Libro en un archivo binario
+					try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("libros.bin"))) {
+						oos.writeObject(libros);
+						System.out.println("Objetos Libro escritos en el archivo binario.");
+					}
+				} catch (ParserConfigurationException | IOException e) {
+					e.printStackTrace();
+				} catch (org.xml.sax.SAXException e) {
+					e.printStackTrace();
+				}
+				break;
+			case 7:
 				mostrarMenu();
 				break;
 			default:
@@ -325,9 +418,13 @@ public class Principal {
 				int fecha_devolucion = sca.nextInt();
 				boolean esDevuelto = false;
 
-				prestamo = new Prestamo(id_prestamo, id_cliente, id_libro, fecha_prestamo, fecha_devolucion,
+				if (libro.encontrarLibroParaPrestamo(archivoLibros, id_libro)== true){
+					prestamo = new Prestamo(id_prestamo, id_cliente, id_libro, fecha_prestamo, fecha_devolucion,
 						esDevuelto);
 				prestamo.hacerPrestamo(archivoPrestamos);
+				}else{
+					System.out.println("No se ha encontrado el libro con ese ID. Inténtelo de nuevo");
+				}
 
 				break;
 			case 2:

@@ -81,6 +81,7 @@ public class Autor implements Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
+	// Método auxiliar para leer y escribir la lista de autores en el archivo
 	private ArrayList<Autor> obtenerAutoresDesdeArchivo(File archivo) throws IOException, ClassNotFoundException {
 		if (archivo.exists() && archivo.length() > 0) {
 			ObjectInputStream objetoEntrada = new ObjectInputStream(new FileInputStream(archivo));
@@ -114,7 +115,7 @@ public class Autor implements Serializable {
 	public void modificarAutor(File archivo, int idAutor, String nuevoNombre, String nuevaNacionalidad,	int nuevoAnioNacimiento) {
 		try {
 			// Cargar autores existentes si el archivo ya tiene datos
-			ArrayList<Autor> autores = obtenerAutores(archivo);
+			ArrayList<Autor> autores = obtenerAutoresDesdeArchivo(archivo);
 
 			// Buscar el autor con el id proporcionado
 			for (Autor autor : autores) {
@@ -140,24 +141,10 @@ public class Autor implements Serializable {
 		}
 	}
 
-	// Métodos auxiliares para leer y escribir la lista de autores en el archivo
-	private ArrayList<Autor> obtenerAutores(File archivo) throws IOException, ClassNotFoundException {
-		ArrayList<Autor> autores = new ArrayList<>();
-
-		// Cargar autores existentes si el archivo ya tiene datos
-		if (archivo.exists() && archivo.length() > 0) {
-			ObjectInputStream objetoEntrada = new ObjectInputStream(new FileInputStream(archivo));
-			autores = (ArrayList<Autor>) objetoEntrada.readObject();
-			objetoEntrada.close();
-		}
-
-		return autores;
-	}
-
 	public void borrarAutor(File archivo, int idAutor) {
         try {
             // Cargar la lista actual de autores desde el archivo binario
-            ArrayList<Autor> autores = obtenerAutores(archivo);
+            ArrayList<Autor> autores = obtenerAutoresDesdeArchivo(archivo);
 
             // Marcar la posición del autor que queremos eliminar como null
             for (int i = 0; i < autores.size(); i++) {
