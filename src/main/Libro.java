@@ -47,6 +47,7 @@ public class Libro implements Serializable {
 		this.id_libro = id_libro;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void agregarLibro(File archivo, ArrayList<Libro> libros) {
 		try {
 			// Cargar libros existentes si el archivo ya tiene datos

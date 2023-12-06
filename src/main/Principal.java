@@ -88,6 +88,7 @@ public class Principal {
 		System.out.print("Seleccione una opción: ");
 	}
 
+	@SuppressWarnings("unchecked")
 	private static void gestionarLibros(File archivoLibros) {
 		System.out.println("Elige una de las opciones");
 		System.out.println("1. Añadir un Libro");
@@ -198,7 +199,7 @@ public class Principal {
 					Document document = builder.parse(new File("libros.xml"));
 
 					// Obtener el nodo raíz "libros"
-					Element rootElement = document.getDocumentElement();
+					// Element rootElement = document.getDocumentElement();
 
 					// Obtener la lista de nodos de libros
 					NodeList nodeList = document.getElementsByTagName("libro");
@@ -239,6 +240,7 @@ public class Principal {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private static void gestionarAutores(File archivoAutores) {
 		System.out.println("Elige una de las opciones");
 		System.out.println("1. Añadir un/a autor/a");
@@ -349,7 +351,7 @@ public class Principal {
 					Document document = builder.parse(new File("autores.xml"));
 
 					// Obtener el nodo raíz "autores"
-					Element rootElement = document.getDocumentElement();
+					// Element rootElement = document.getDocumentElement();
 
 					// Obtener la lista de nodos de autores
 					NodeList nodeList = document.getElementsByTagName("autor");

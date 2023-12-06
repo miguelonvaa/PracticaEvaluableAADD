@@ -52,6 +52,7 @@ public class Autor implements Serializable {
 		return serialVersionUID;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void agregarAutor(File archivo, ArrayList<Autor> autores) {
 		try {
 			// Cargar autores existentes si el archivo ya tiene datos
