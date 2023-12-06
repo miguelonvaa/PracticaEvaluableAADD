@@ -81,9 +81,13 @@ public class Prestamo implements Serializable {
         try {
             BufferedReader buffer = new BufferedReader(new FileReader(archivoPrestamos));
             String linea = buffer.readLine();
-            while (linea != null) {
-                System.out.println(linea);
-                linea = buffer.readLine();
+            if (linea == null) {
+                System.out.println("El archivo de préstamos está vacío.");
+            } else {
+                while (linea != null) {
+                    System.out.println(linea);
+                    linea = buffer.readLine();
+                }
             }
             buffer.close();
 

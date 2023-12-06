@@ -24,11 +24,12 @@ import javax.xml.transform.stream.StreamResult;
 
 public class Principal {
 	private static Scanner sca = new Scanner(System.in);
-	private static Libro libro = null;
-	private static Autor autor = null;
-	private static Prestamo prestamo = null;
+	private static Libro libro = new Libro ("", "", 0,0);
+	private static Autor autor = new Autor ("", "", 0,0);
+	private static Prestamo prestamo = new Prestamo(0,0,0,0,0,false);
 	public static File archivoLibros, archivoAutores, archivoPrestamos;
-	private static final ArrayList<Libro> libros = new ArrayList<>();
+	private static ArrayList<Libro> libros = new ArrayList<>();
+	private static ArrayList<Autor> autores = new ArrayList<>();
 
 	public static void main(String[] args) {
 		crearArchivos();
@@ -112,8 +113,10 @@ public class Principal {
 				libro = new Libro(titulo, genero, anioPublicacion, idLibro);
 				libros.add(libro);
 				libro.agregarLibro(archivoLibros, libros);
+				libros.clear();
 				break;
 			case 2:
+
 				libro.mostrarLibros(archivoLibros);
 				break;
 			case 3:
@@ -136,11 +139,9 @@ public class Principal {
 			case 5:
 				try {
 					// Cargar la lista de libros desde el archivo binario
-					ArrayList<Libro> libros_aXML = new ArrayList<>();
-
 					if (archivoLibros.exists()) {
 						try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivoLibros))) {
-							libros_aXML = (ArrayList<Libro>) ois.readObject();
+							libros = (ArrayList<Libro>) ois.readObject();
 						}
 					}
 
@@ -154,7 +155,7 @@ public class Principal {
 					doc.appendChild(rootElement);
 
 					// Crear elementos para cada libro
-					for (Libro libro : libros_aXML) {
+					for (Libro libro : libros) {
 						Element libroElement = doc.createElement("libro");
 						rootElement.appendChild(libroElement);
 
@@ -184,16 +185,13 @@ public class Principal {
 					transformer.transform(source, result);
 
 					System.out.println("Libros exportados a XML correctamente.");
-
+					libros.clear();
 				} catch (IOException | ClassNotFoundException | ParserConfigurationException | TransformerException e) {
 					e.printStackTrace();
 				}
 				break;
 			case 6:
 				try {
-					// Crear un ArrayList para almacenar los objetos Libro
-					ArrayList<Libro> libros = new ArrayList<>();
-
 					// Parsear el documento XML
 					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 					DocumentBuilder builder = factory.newDocumentBuilder();
@@ -207,24 +205,24 @@ public class Principal {
 
 					// Recorrer la lista de nodos y crear objetos Libro
 					for (int i = 0; i < nodeList.getLength(); i++) {
-						libro = new Libro("", "", 0, 0);
+						libro = new Libro("","",0,0);
 						Node node = nodeList.item(i);
 						if (node.getNodeType() == Node.ELEMENT_NODE) {
 							Element element = (Element) node;
-							libro.setId_libro(
-									Integer.parseInt(element.getElementsByTagName("id").item(0).getTextContent()));
+							libro.setId_libro(Integer.parseInt(element.getElementsByTagName("id").item(0).getTextContent()));
 							libro.setTitulo(element.getElementsByTagName("titulo").item(0).getTextContent());
 							libro.setGenero(element.getElementsByTagName("genero").item(0).getTextContent());
-							libro.setAnio_publicacion(Integer.parseInt(
-									element.getElementsByTagName("anioPublicacion").item(0).getTextContent()));
+							libro.setAnio_publicacion(Integer.parseInt(element.getElementsByTagName("anioPublicacion").item(0).getTextContent()));
 							libros.add(libro);
 						}
 					}
 
 					// Escribir el ArrayList de objetos Libro en un archivo binario
-					try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("libros.bin"))) {
+					try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivoLibros))) {
 						oos.writeObject(libros);
-						System.out.println("Objetos Libro escritos en el archivo binario.");
+						System.out.println("Libros importados correctamente.");
+						libros.clear();
+
 					}
 				} catch (ParserConfigurationException | IOException e) {
 					e.printStackTrace();
@@ -264,9 +262,9 @@ public class Principal {
 				System.out.println("Introduzca el año de nacimiento del autor:");
 				int anioNacimiento = sca.nextInt();
 				autor = new Autor(nombre_autor, nacionalidad, anioNacimiento, idAutor);
-				ArrayList<Autor> autores = new ArrayList<>();
 				autores.add(autor);
 				autor.agregarAutor(archivoAutores, autores);
+				autores.clear();
 				break;
 			case 2:
 				autor.mostrarAutores(archivoAutores);
@@ -292,11 +290,9 @@ public class Principal {
 			case 5:
 				try {
 					// Cargar la lista de autores desde el archivo binario
-					ArrayList<Autor> autores_aXML = new ArrayList<>();
-
 					if (archivoAutores.exists()) {
 						try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivoAutores))) {
-							autores_aXML = (ArrayList<Autor>) ois.readObject();
+							autores = (ArrayList<Autor>) ois.readObject();
 						}
 					}
 
@@ -310,7 +306,7 @@ public class Principal {
 					doc.appendChild(rootElement);
 
 					// Crear elementos para cada autor
-					for (Autor autor : autores_aXML) {
+					for (Autor autor : autores) {
 						Element autorElement = doc.createElement("autor");
 						rootElement.appendChild(autorElement);
 
@@ -340,47 +336,45 @@ public class Principal {
 					transformer.transform(source, result);
 
 					System.out.println("Autores exportados a XML correctamente.");
-
+					autores.clear();
 				} catch (IOException | ClassNotFoundException | ParserConfigurationException | TransformerException e) {
 					e.printStackTrace();
 				}
 				break;
 			case 6:
 				try {
-					// Crear un ArrayList para almacenar los objetos Libro
-					ArrayList<Libro> libros = new ArrayList<>();
-
 					// Parsear el documento XML
 					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 					DocumentBuilder builder = factory.newDocumentBuilder();
-					Document document = builder.parse(new File("libros.xml"));
+					Document document = builder.parse(new File("autores.xml"));
 
-					// Obtener el nodo raíz "libros"
+					// Obtener el nodo raíz "autores"
 					Element rootElement = document.getDocumentElement();
 
-					// Obtener la lista de nodos de libros
-					NodeList nodeList = document.getElementsByTagName("libro");
+					// Obtener la lista de nodos de autores
+					NodeList nodeList = document.getElementsByTagName("autor");
 
-					// Recorrer la lista de nodos y crear objetos Libro
+					// Recorrer la lista de nodos y crear objetos Autor
 					for (int i = 0; i < nodeList.getLength(); i++) {
-						libro = new Libro("", "", 0, 0);
+						autor = new Autor("", "", 0 ,0);
 						Node node = nodeList.item(i);
 						if (node.getNodeType() == Node.ELEMENT_NODE) {
 							Element element = (Element) node;
-							libro.setId_libro(
+							autor.setId_autor(
 									Integer.parseInt(element.getElementsByTagName("id").item(0).getTextContent()));
-							libro.setTitulo(element.getElementsByTagName("titulo").item(0).getTextContent());
-							libro.setGenero(element.getElementsByTagName("genero").item(0).getTextContent());
-							libro.setAnio_publicacion(Integer.parseInt(
-									element.getElementsByTagName("anioPublicacion").item(0).getTextContent()));
-							libros.add(libro);
+							autor.setNombre_autor(element.getElementsByTagName("nombre").item(0).getTextContent());
+							autor.setNacionalidad(element.getElementsByTagName("nacionalidad").item(0).getTextContent());
+							autor.setAnio_nacimiento(Integer.parseInt(
+									element.getElementsByTagName("anioNacimiento").item(0).getTextContent()));
+							autores.add(autor);
 						}
 					}
 
-					// Escribir el ArrayList de objetos Libro en un archivo binario
-					try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("libros.bin"))) {
-						oos.writeObject(libros);
-						System.out.println("Objetos Libro escritos en el archivo binario.");
+					// Escribir el ArrayList de objetos Autor en un archivo binario
+					try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivoAutores))) {
+						oos.writeObject(autores);
+						System.out.println("Autores importados correctamente");
+						autores.clear();
 					}
 				} catch (ParserConfigurationException | IOException e) {
 					e.printStackTrace();
