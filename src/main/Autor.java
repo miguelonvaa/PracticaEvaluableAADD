@@ -8,7 +8,6 @@ public class Autor implements Serializable {
 	private int anio_nacimiento, id_autor;
 	private static final long serialVersionUID = 1L;
 
-
 	public Autor(String nombre_autor, String nacionalidad, int anio_nacimiento, int id_autor) {
 		this.nombre_autor = nombre_autor;
 		this.nacionalidad = nacionalidad;
@@ -52,14 +51,11 @@ public class Autor implements Serializable {
 		return serialVersionUID;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void agregarAutor(File archivo, ArrayList<Autor> autores) {
 		try {
 			// Cargar autores existentes si el archivo ya tiene datos
 			if (archivo.exists() && archivo.length() > 0) {
-				ObjectInputStream objetoEntrada = new ObjectInputStream(new FileInputStream(archivo));
-				ArrayList<Autor> autoresExistente = (ArrayList<Autor>) objetoEntrada.readObject();
-				objetoEntrada.close();
+				ArrayList<Autor> autoresExistente = obtenerAutoresDesdeArchivo(archivo);
 
 				// Agregar el nuevo autor a la lista existente
 				autoresExistente.add(this);
@@ -81,20 +77,6 @@ public class Autor implements Serializable {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	// Método auxiliar para leer y escribir la lista de autores en el archivo
-	private ArrayList<Autor> obtenerAutoresDesdeArchivo(File archivo) throws IOException, ClassNotFoundException {
-		if (archivo.exists() && archivo.length() > 0) {
-			ObjectInputStream objetoEntrada = new ObjectInputStream(new FileInputStream(archivo));
-			ArrayList<Autor> autores = (ArrayList<Autor>) objetoEntrada.readObject();
-			objetoEntrada.close();
-			return autores;
-		} else {
-			System.out.println("El archivo está vacío o no existe.");
-			return new ArrayList<>(); // Devuelve una lista vacía si el archivo está vacío o no existe
-		}
-	}
-
 	// Método para mostrar los autores en la consola
 	public void mostrarAutores(File archivo) {
 		try {
@@ -113,7 +95,8 @@ public class Autor implements Serializable {
 		}
 	}
 
-	public void modificarAutor(File archivo, int idAutor, String nuevoNombre, String nuevaNacionalidad,	int nuevoAnioNacimiento) {
+	public void modificarAutor(File archivo, int idAutor, String nuevoNombre, String nuevaNacionalidad,
+			int nuevoAnioNacimiento) {
 		try {
 			// Cargar autores existentes si el archivo ya tiene datos
 			ArrayList<Autor> autores = obtenerAutoresDesdeArchivo(archivo);
@@ -143,35 +126,52 @@ public class Autor implements Serializable {
 	}
 
 	public void borrarAutor(File archivo, int idAutor) {
-        try {
-            // Cargar la lista actual de autores desde el archivo binario
-            ArrayList<Autor> autores = obtenerAutoresDesdeArchivo(archivo);
+		try {
+			// Cargar la lista actual de autores desde el archivo binario
+			ArrayList<Autor> autores = obtenerAutoresDesdeArchivo(archivo);
 
-            // Marcar la posición del autor que queremos eliminar como null
-            for (int i = 0; i < autores.size(); i++) {
-                if (autores.get(i).getId_autor() == idAutor) {
-                    autores.set(i, null);
-                    break;
-                }
-            }
+			if (autores.size() > 0) {
+				// Marcar la posición del autor que queremos eliminar como null
+				for (int i = 0; i < autores.size(); i++) {
+					if (autores.get(i).getId_autor() == idAutor) {
+						autores.set(i, null);
+						break;
+					}
+				}
+				// Filtrar la lista para eliminar los objetos null
+				autores.removeIf(autor -> autor == null);
 
-            // Filtrar la lista para eliminar los objetos null
-            autores.removeIf(autor -> autor == null);
+				// Guardar la lista actualizada en el archivo binario
+				guardarAutoresEnArchivo(autores, archivo);
 
-            // Guardar la lista actualizada en el archivo binario
-            guardarAutoresEnArchivo(autores, archivo);
+				System.out.println("Autor con ID " + idAutor + " eliminado correctamente.");
+			} else {
+				System.out.println("No hay ningún autor registrado.");
+			}
 
-            System.out.println("Autor con ID " + idAutor + " eliminado correctamente.");
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
 
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
+	// Método para guardar la nueva lista en el archivo autores.bin
+	private void guardarAutoresEnArchivo(ArrayList<Autor> autores, File archivo) throws IOException {
+		try (ObjectOutputStream objetoSalida = new ObjectOutputStream(new FileOutputStream(archivo))) {
+			objetoSalida.writeObject(autores);
+		}
+	}
 
-    // Método para guardar la nueva lista en el archivo libros.bin
-    private void guardarAutoresEnArchivo(ArrayList<Autor> autores, File archivo) throws IOException {
-        try (ObjectOutputStream objetoSalida = new ObjectOutputStream(new FileOutputStream(archivo))) {
-            objetoSalida.writeObject(autores);
-        }
-    }
+	@SuppressWarnings("unchecked")
+	// Método auxiliar para leer y escribir la lista de autores en el archivo
+	private ArrayList<Autor> obtenerAutoresDesdeArchivo(File archivo) throws IOException, ClassNotFoundException {
+		if (archivo.exists() && archivo.length() > 0) {
+			ObjectInputStream objetoEntrada = new ObjectInputStream(new FileInputStream(archivo));
+			ArrayList<Autor> autores = (ArrayList<Autor>) objetoEntrada.readObject();
+			objetoEntrada.close();
+			return autores;
+		} else {
+			System.out.println("El archivo está vacío o no existe.");
+			return new ArrayList<>(); // Devuelve una lista vacía si el archivo está vacío o no existe
+		}
+	}
 }

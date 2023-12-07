@@ -47,46 +47,26 @@ public class Libro implements Serializable {
 		this.id_libro = id_libro;
 	}
 
-	@SuppressWarnings("unchecked")
+	// @SuppressWarnings("unchecked")
 	public void agregarLibro(File archivo, ArrayList<Libro> libros) {
 		try {
 			// Cargar libros existentes si el archivo ya tiene datos
 			if (archivo.exists() && archivo.length() > 0) {
-				ObjectInputStream objetoEntrada = new ObjectInputStream(new FileInputStream(archivo));
-				ArrayList<Libro> librosExistente = (ArrayList<Libro>) objetoEntrada.readObject();
-				objetoEntrada.close();
+				ArrayList<Libro> librosExistente = obtenerLibrosDesdeArchivo(archivo);
 
 				// Agregar el nuevo libro a la lista existente
 				librosExistente.add(this);
 
 				// Escribir la lista completa de nuevo en el archivo
-				ObjectOutputStream objetoSalida = new ObjectOutputStream(new FileOutputStream(archivo));
-				objetoSalida.writeObject(librosExistente);
-				objetoSalida.close();
+				guardarLibrosEnArchivo(librosExistente, archivo);
 			} else {
 				// Si el archivo está vacío o no existe, simplemente escribir el libro
-				ObjectOutputStream objetoSalida = new ObjectOutputStream(new FileOutputStream(archivo));
-				objetoSalida.writeObject(libros);
-				objetoSalida.close();
+				guardarLibrosEnArchivo(libros, archivo);
 			}
 
 			System.out.println("Libro guardado en " + archivo);
 		} catch (IOException | ClassNotFoundException e) {
 			System.out.println("No se ha guardado: " + e.getMessage());
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	// Método auxiliar para leer y escribir la lista de libros en el archivo
-	public ArrayList<Libro> obtenerLibrosDesdeArchivo(File archivo) throws IOException, ClassNotFoundException {
-		if (archivo.exists() && archivo.length() > 0) {
-			ObjectInputStream objetoEntrada = new ObjectInputStream(new FileInputStream(archivo));
-			ArrayList<Libro> libros = (ArrayList<Libro>) objetoEntrada.readObject();
-			objetoEntrada.close();
-			return libros;
-		} else {
-			System.out.println("El archivo está vacío o no existe.");
-			return new ArrayList<>(); // Devuelve una lista vacía si el archivo está vacío o no existe
 		}
 	}
 
@@ -144,9 +124,7 @@ public class Libro implements Serializable {
 					libro.setAnio_publicacion(nuevoAnioPublicacion);
 
 					// Escribir la lista completa de nuevo en el archivo
-					ObjectOutputStream objetoSalida = new ObjectOutputStream(new FileOutputStream(archivo));
-					objetoSalida.writeObject(libros);
-					objetoSalida.close();
+					guardarLibrosEnArchivo(libros, archivo);
 
 					System.out.println("Libro modificado correctamente.");
 					return;
@@ -164,7 +142,8 @@ public class Libro implements Serializable {
             // Cargar la lista actual de libros desde el archivo binario
             ArrayList<Libro> libros = obtenerLibrosDesdeArchivo(archivo);
 
-            // Marcar la posición del libro que queremos eliminar como null
+			if(libros.size()>0){
+				    // Marcar la posición del libro que queremos eliminar como null
             for (int i = 0; i < libros.size(); i++) {
                 if (libros.get(i).getId_libro() == idLibro) {
                     libros.set(i, null);
@@ -179,7 +158,7 @@ public class Libro implements Serializable {
             guardarLibrosEnArchivo(libros, archivo);
 
             System.out.println("Libro con ID " + idLibro + " eliminado correctamente.");
-
+			}
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -187,8 +166,22 @@ public class Libro implements Serializable {
 
     // Método para guardar la nueva lista en el archivo libros.bin
     private void guardarLibrosEnArchivo(ArrayList<Libro> libros, File archivo) throws IOException {
-        try (ObjectOutputStream objetoSalida = new ObjectOutputStream(new FileOutputStream(archivo))) {
+		try (ObjectOutputStream objetoSalida = new ObjectOutputStream(new FileOutputStream(archivo))) {
             objetoSalida.writeObject(libros);
-        }
-    }
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	// Método auxiliar para leer y escribir la lista de libros en el archivo libros.bin
+	public ArrayList<Libro> obtenerLibrosDesdeArchivo(File archivo) throws IOException, ClassNotFoundException {
+		if (archivo.exists() && archivo.length() > 0) {
+			ObjectInputStream objetoEntrada = new ObjectInputStream(new FileInputStream(archivo));
+			ArrayList<Libro> libros = (ArrayList<Libro>) objetoEntrada.readObject();
+			objetoEntrada.close();
+			return libros;
+		} else {
+			System.out.println("El archivo está vacío o no existe.");
+			return new ArrayList<>(); // Devuelve una lista vacía si el archivo está vacío o no existe
+		}
+	}
 }
