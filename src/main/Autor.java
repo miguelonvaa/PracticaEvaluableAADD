@@ -61,14 +61,10 @@ public class Autor implements Serializable {
 				autoresExistente.add(this);
 
 				// Escribir la lista completa de nuevo en el archivo
-				ObjectOutputStream objetoSalida = new ObjectOutputStream(new FileOutputStream(archivo));
-				objetoSalida.writeObject(autoresExistente);
-				objetoSalida.close();
+				guardarAutoresEnArchivo(autoresExistente, archivo);
 			} else {
 				// Si el archivo está vacío o no existe, simplemente escribir el libro
-				ObjectOutputStream objetoSalida = new ObjectOutputStream(new FileOutputStream(archivo));
-				objetoSalida.writeObject(autores);
-				objetoSalida.close();
+				guardarAutoresEnArchivo(autores, archivo);
 			}
 
 			System.out.println("Autor guardado en " + archivo);
@@ -110,10 +106,7 @@ public class Autor implements Serializable {
 					autor.setAnio_nacimiento(nuevoAnioNacimiento);
 
 					// Escribir la lista completa de nuevo en el archivo
-					ObjectOutputStream objetoSalida = new ObjectOutputStream(new FileOutputStream(archivo));
-					objetoSalida.writeObject(autores);
-					objetoSalida.close();
-
+					guardarAutoresEnArchivo(autores, archivo);
 					System.out.println("Autor modificado correctamente.");
 					return;
 				}

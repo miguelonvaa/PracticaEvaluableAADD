@@ -125,7 +125,6 @@ public class Libro implements Serializable {
 
 					// Escribir la lista completa de nuevo en el archivo
 					guardarLibrosEnArchivo(libros, archivo);
-
 					System.out.println("Libro modificado correctamente.");
 					return;
 				}
